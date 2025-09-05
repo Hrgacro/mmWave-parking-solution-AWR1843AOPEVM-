@@ -1,0 +1,130 @@
+#include "main.h"
+#include "usart.h"
+#include "gpio.h"
+#include "adc.h"
+#include <string.h>
+#include <stdio.h>
+
+// Make sure these match your CubeMX pin assignments!
+#define CMD_BUF_LEN 8
+uint8_t cmd_buf[CMD_BUF_LEN] = {0};
+uint8_t cmd_idx = 0;
+
+#define NUM_SENSORS 6
+uint32_t adc_vals[NUM_SENSORS];
+
+// Explicit channel list (check CubeMX for your board!)
+const uint32_t adc_channels[NUM_SENSORS] = {
+    ADC_CHANNEL_0, // Sensor 1
+    ADC_CHANNEL_1, // Sensor 2
+    ADC_CHANNEL_3, // Sensor 3
+    ADC_CHANNEL_4, // Sensor 4
+    ADC_CHANNEL_5, // Sensor 5
+    ADC_CHANNEL_6  // Sensor 6
+};
+
+void clear_uart_errors(UART_HandleTypeDef *huart)
+{
+    __HAL_UART_CLEAR_OREFLAG(huart);
+    __HAL_UART_CLEAR_FEFLAG(huart);
+    __HAL_UART_CLEAR_NEFLAG(huart);
+    __HAL_UART_CLEAR_PEFLAG(huart);
+}
+
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_ADC_Init();
+
+    uint32_t last_adc_tick = 0;
+
+    while (1)
+    {
+        // UART error check before receive
+        if (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_ORE) ||
+            __HAL_UART_GET_FLAG(&huart2, UART_FLAG_FE) ||
+            __HAL_UART_GET_FLAG(&huart2, UART_FLAG_NE) ||
+            __HAL_UART_GET_FLAG(&huart2, UART_FLAG_PE))
+        {
+            clear_uart_errors(&huart2);
+            MX_USART2_UART_Init();
+        }
+
+        uint8_t rx;
+        if (HAL_UART_Receive(&huart2, &rx, 1, 10) == HAL_OK)
+        {
+            HAL_UART_Transmit(&huart2, &rx, 1, HAL_MAX_DELAY);
+            HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
+
+            if (rx == '\r' || rx == '\n')
+            {
+                cmd_buf[cmd_idx] = 0;
+                if (cmd_idx == 3 &&
+                    cmd_buf[0] == 'C' &&
+                    cmd_buf[1] == 'A' &&
+                    cmd_buf[2] == 'R')
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
+                        HAL_Delay(120);
+                    }
+                    char msg[] = "CAR DETECTED\r\n";
+                    HAL_UART_Transmit(&huart2, (uint8_t*)msg, sizeof(msg)-1, HAL_MAX_DELAY);
+                }
+                cmd_idx = 0;
+                memset(cmd_buf, 0, CMD_BUF_LEN);
+            }
+            else if (cmd_idx < CMD_BUF_LEN - 1)
+            {
+                cmd_buf[cmd_idx++] = rx;
+            }
+            else
+            {
+                cmd_idx = 0;
+                memset(cmd_buf, 0, CMD_BUF_LEN);
+            }
+        }
+        else
+        {
+            clear_uart_errors(&huart2);
+            MX_USART2_UART_Init();
+        }
+
+        // --- ADC Sampling and UART Sending (every ~100 ms) ---
+        if (HAL_GetTick() - last_adc_tick > 100)
+        {
+            last_adc_tick = HAL_GetTick();
+
+            // Read all 6 ADC channels with longer sample time for stability
+            for (int ch = 0; ch < NUM_SENSORS; ++ch) {
+                ADC_ChannelConfTypeDef sConfig = {0};
+                sConfig.Channel = adc_channels[ch];
+                sConfig.Rank = ADC_REGULAR_RANK_1;
+                // Use longer sample time for best stability, especially for high-impedance sensors/wires
+                sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+                HAL_ADC_ConfigChannel(&hadc, &sConfig);
+                HAL_ADC_Start(&hadc);
+                if (HAL_ADC_PollForConversion(&hadc, 10) == HAL_OK) {
+                    adc_vals[ch] = HAL_ADC_GetValue(&hadc);
+                } else {
+                    adc_vals[ch] = 0;
+                }
+                HAL_ADC_Stop(&hadc);
+            }
+
+            // Print to UART for debug
+            char adc_msg[128];
+            snprintf(adc_msg, sizeof(adc_msg),
+                "ADC1:%lu ADC2:%lu ADC3:%lu ADC4:%lu ADC5:%lu ADC6:%lu\r\n",
+                adc_vals[0], adc_vals[1], adc_vals[2], adc_vals[3], adc_vals[4], adc_vals[5]);
+            HAL_UART_Transmit(&huart2, (uint8_t*)adc_msg, strlen(adc_msg), HAL_MAX_DELAY);
+        }
+    }
+}
+
+void SystemClock_Config(void) {}
+void Error_Handler(void) { while (1) {} }
