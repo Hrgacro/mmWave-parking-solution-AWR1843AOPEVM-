@@ -25,6 +25,7 @@ Instructions how to use:
 
 NOW NEXT STEPS ARE ONLY IF YOU WANT TO USE NUCLEO + CUSTOM PCB LIKE ME, IF YOU DONT WANT TO USE IT, JUST STICK TO THE FIRST 5 STEPS.
 
+Whole NUCLEO file couldn't fit so I placed png images of pinouts how it should look. GO THROUGH ALL OF THE PICTURES, everything must be the same!
 
 6. Now Nucleo is in order, I used NUCLEO-WL55JC1, 6.6.0 version for MX, you can use even newer if you want, this was easier for me (Note: if you want to use 6.6.0 MX like me use 1.10.0 IDE so you wont have any complications with installation). Than you should upload your main.c code to nucleo, you have full pinout order for your MX, so when you go into STM32CUBEIDE, connect your Nucleo in pc aswell and just upload code, its very easy.
 7. When you have both of it, I used custom PCB to bridge MX/TX and GND of AWR1843AOPEVM with Nucleo, this is crucial because they have to have stable communication between eachother. (Note: You can always check if your nucleo is communicating with AWR1843AOPEVM with Tera Term/PuTTY.)
@@ -32,5 +33,6 @@ NOW NEXT STEPS ARE ONLY IF YOU WANT TO USE NUCLEO + CUSTOM PCB LIKE ME, IF YOU D
 
 
 Thats it. Happy prototyping. Leave comment, rate my project. 
+
 
 Thank you for your attention.
