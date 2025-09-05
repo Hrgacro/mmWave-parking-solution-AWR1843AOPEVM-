@@ -1,0 +1,36 @@
+# mmWave-parking-solution-AWR1843AOPEVM-
+This project involves a parking solution using a AWR1843AOPEVM, Nucleo board, custom PCB, and ground sensors (DRV5055). I used GitHub Copilot to generate Python code for sensor data processing, even though I had no prior Python experience. It’s a hands-on example of combining hardware with software to solve a real-world problem.
+
+Technologies Used:
+AWR1843AOPEVM
+Nucleo board
+Custom PCB
+Ground sensors
+GitHub Copilot (for code generation)
+
+
+What I Learned:
+How to integrate hardware and software.
+How to use AI tools to accelerate coding.
+The value of documenting complex projects.
+
+
+Instructions how to use: 
+
+1. You need to download program like Tera Term/PuTTY
+2. You need to connect awr1843aopevm to PC, start Tera Term/PuTTY, and use enhanced PORT with 115200 baudrate
+3. Go into Setup and choose Serial port so you can change baud rate on program to your awr1843aopevm. Type 115200, 8bit, none, 1bit, none, transmit delay is 0 0.
+4. Then when you do that, in the top left corner go into File - Send File - and in the filename upload .cfg and this is the crucial part, leave file reading method as it is "Bulk Read", and Binary is off, but Delay type is per line and delay time(ms) is 20 always for me, otherwise you will see gibberish in your console.
+5. When your code is uploaded on program, you will need to press ENTER one more time so the code starts, no Error messages should be displayed, and radar should start ticking.
+
+NOW NEXT STEPS ARE ONLY IF YOU WANT TO USE NUCLEO + CUSTOM PCB LIKE ME, IF YOU DONT WANT TO USE IT, JUST STICK TO THE FIRST 5 STEPS.
+
+
+6. Now Nucleo is in order, I used NUCLEO-WL55JC1, 6.6.0 version for MX, you can use even newer if you want, this was easier for me (Note: if you want to use 6.6.0 MX like me use 1.10.0 IDE so you wont have any complications with installation). Than you should upload your main.c code to nucleo, you have full pinout order for your MX, so when you go into STM32CUBEIDE, connect your Nucleo in pc aswell and just upload code, its very easy.
+7. When you have both of it, I used custom PCB to bridge MX/TX and GND of AWR1843AOPEVM with Nucleo, this is crucial because they have to have stable communication between eachother. (Note: You can always check if your nucleo is communicating with AWR1843AOPEVM with Tera Term/PuTTY.)
+8. Now I used custom PCB especially for nucleo and ground sensors, so my logic was I will easy out the mapping for radar because when ground sensor is triggered it sends pulse to nucleo which will send pulse to radar, and radar will use its logic and scan area where the sensor are triggered. And it worked like you saw in video.
+
+
+Thats it. Happy prototyping. Leave comment, rate my project. 
+
+Thank you for your attention.
