@@ -86,8 +86,9 @@ This project highlights my ability to:
 - **Sensor Data Processing**: A foundational step for AI/ML applications (e.g., object detection, parking automation).  
 
 ## Contact
-Feedback or questions? Reach out via []!  
+Feedback or questions? Reach out via [LinkedIn - https://www.linkedin.com/in/tonči-hrgović-315889248/]!  
 
 Watch the Prototype: [https://youtu.be/zbJpwU5Eh9E]
+
 
 
